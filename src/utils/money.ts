@@ -1,6 +1,7 @@
 import DecimalJs from 'decimal.js';
 
 import type { BalanceItem } from '../types/api';
+import { createFinancialDecimalConstructor } from './financialDecimal';
 
 function groupWholeDigits(value: string): string {
   return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -13,10 +14,18 @@ export function formatDecimalString(value: string): string {
 }
 
 export function calculateTotalAvailableUsd(items: BalanceItem[]): DecimalJs {
+  const FinancialDecimal = createFinancialDecimalConstructor(
+    items.flatMap((item) => [item.available, item.usdPrice]),
+  );
+
   return items.reduce(
     (total, item) =>
-      total.plus(new DecimalJs(item.available).times(new DecimalJs(item.usdPrice))),
-    new DecimalJs(0),
+      total.plus(
+        new FinancialDecimal(item.available).times(
+          new FinancialDecimal(item.usdPrice),
+        ),
+      ),
+    new FinancialDecimal(0),
   );
 }
 

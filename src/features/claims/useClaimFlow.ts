@@ -19,6 +19,7 @@ import { hasClaimId } from './response';
 import type { ClaimAttempt } from './types';
 import { useClaimRecovery } from './useClaimRecovery';
 import {
+  isClaimDestinationValid,
   isAmountInputCharacters,
   validateClaimAmount,
 } from './validation';
@@ -79,8 +80,9 @@ export function useClaimFlow(initialAsset?: string) {
       options.fee,
     );
   }, [amount, options, selectedBalance]);
-  const destinationIsValid = Boolean(
-    destinationId && options?.destinations.some((item) => item.id === destinationId),
+  const destinationIsValid = isClaimDestinationValid(
+    destinationId,
+    options?.destinations ?? [],
   );
   const canReview =
     Boolean(amount) &&
