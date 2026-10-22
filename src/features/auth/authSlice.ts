@@ -32,6 +32,11 @@ const authSlice = createSlice({
       state.status = 'validating';
       state.error = null;
     },
+    beginRestoration(state, action: PayloadAction<string>) {
+      state.token = action.payload;
+      state.status = 'checking';
+      state.error = null;
+    },
     authenticate(state) {
       state.status = 'authenticated';
       state.error = null;
@@ -44,6 +49,11 @@ const authSlice = createSlice({
   },
 });
 
-export const { authenticate, beginValidation, sessionExpired, setAnonymous } =
-  authSlice.actions;
+export const {
+  authenticate,
+  beginRestoration,
+  beginValidation,
+  sessionExpired,
+  setAnonymous,
+} = authSlice.actions;
 export const authReducer = authSlice.reducer;

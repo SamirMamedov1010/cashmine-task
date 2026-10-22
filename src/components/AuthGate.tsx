@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import {
   authenticate,
+  beginRestoration,
   beginValidation,
   setAnonymous,
 } from '../features/auth/authSlice';
@@ -24,9 +25,9 @@ export function AuthGate() {
   const didInitialize = useRef(false);
 
   const verifyToken = useCallback(
-    async (token: string) => {
+    async (token: string, source: 'entry' | 'restore' = 'entry') => {
       dispatch(resetClaimState());
-      dispatch(beginValidation(token));
+      dispatch(source === 'restore' ? beginRestoration(token) : beginValidation(token));
       const request = dispatch(
         api.endpoints.getBalances.initiate(undefined, {
           forceRefetch: true,
@@ -55,13 +56,17 @@ export function AuthGate() {
     }
 
     didInitialize.current = true;
+    if (status !== 'checking') {
+      return;
+    }
+
     const storedToken = loadStoredToken();
     if (storedToken) {
-      void verifyToken(storedToken);
+      void verifyToken(storedToken, 'restore');
     } else {
       dispatch(setAnonymous());
     }
-  }, [dispatch, verifyToken]);
+  }, [dispatch, status, verifyToken]);
 
   if (status === 'checking') {
     return (
