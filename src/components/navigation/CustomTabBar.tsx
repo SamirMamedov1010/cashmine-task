@@ -38,65 +38,60 @@ export function CustomTabBar({
       accessibilityRole="tablist"
       style={[styles.container, { paddingBottom: Math.max(insets.bottom, 10) }]}
     >
-      <View style={styles.items}>
-        {state.routes.map((route, index) => {
-          const focused = state.index === index;
-          const options = descriptors[route.key].options;
-          const color = focused ? ACTIVE_COLOR : INACTIVE_COLOR;
-          const label = typeof options.title === 'string' ? options.title : route.name;
+      {state.routes.map((route, index) => {
+        const focused = state.index === index;
+        const options = descriptors[route.key].options;
+        const color = focused ? ACTIVE_COLOR : INACTIVE_COLOR;
+        const label = typeof options.title === 'string' ? options.title : route.name;
 
-          const onPress = () => {
-            const event = emitter.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+        const onPress = () => {
+          const event = emitter.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
 
-            if (!focused && !event.defaultPrevented) {
-              navigateToTab(route.key);
-            }
-          };
+          if (!focused && !event.defaultPrevented) {
+            navigateToTab(route.key);
+          }
+        };
 
-          const onLongPress = () => {
-            emitter.emit({ type: 'tabLongPress', target: route.key });
-          };
+        const onLongPress = () => {
+          emitter.emit({ type: 'tabLongPress', target: route.key });
+        };
 
-          return (
-            <Pressable
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: focused }}
-              key={route.key}
-              onLongPress={onLongPress}
-              onPress={onPress}
-              style={({ pressed }) => [styles.item, pressed && styles.pressed]}
-            >
-              <TabIcon color={color} name={route.name} />
-              <Text style={[styles.label, { color }, focused && styles.activeLabel]}>
-                {label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+        return (
+          <Pressable
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: focused }}
+            key={route.key}
+            onLongPress={onLongPress}
+            onPress={onPress}
+            style={({ pressed }) => [styles.item, pressed && styles.pressed]}
+          >
+            <TabIcon color={color} name={route.name} />
+            <Text style={[styles.label, { color }, focused && styles.activeLabel]}>
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
+    maxWidth: 520,
+    alignSelf: 'center',
     flexShrink: 0,
+    flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderTopColor: '#E7E2EC',
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 8,
-    paddingHorizontal: 16,
-  },
-  items: {
-    width: '100%',
-    maxWidth: 520,
-    alignSelf: 'center',
-    flexDirection: 'row',
   },
   item: {
     flex: 1,
