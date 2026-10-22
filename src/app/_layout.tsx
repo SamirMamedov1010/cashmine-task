@@ -9,7 +9,10 @@ import { store } from '../store';
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="claim" />
+      </Stack>
       <ClaimLifecycleTracker />
       <Toast config={cashMineToastConfig} />
     </Provider>

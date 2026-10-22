@@ -1,10 +1,14 @@
+import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useAuthentication } from '../features/auth/useAuthentication';
-import { HomeDashboard } from './HomeDashboard';
 import { TokenEntryScreen } from './TokenEntryScreen';
 
-export function AuthGate() {
+interface AuthGateProps {
+  children: ReactNode;
+}
+
+export function AuthGate({ children }: AuthGateProps) {
   const { error, status, verifyToken } = useAuthentication();
 
   if (status === 'checking') {
@@ -17,7 +21,7 @@ export function AuthGate() {
   }
 
   if (status === 'authenticated') {
-    return <HomeDashboard />;
+    return children;
   }
 
   return (
