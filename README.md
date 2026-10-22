@@ -1,56 +1,102 @@
-# Welcome to your Expo app 👋
+# CashMine — React Native Practical Task
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile-first payback balance and claim application built with React Native, Expo, and TypeScript.
 
-## Get started
+## Live Demo
 
-1. Install dependencies
+**Web application:** https://cashmine-task-woad.vercel.app
 
-   ```bash
-   npm install
-   ```
+The application is optimized for mobile browsers and can be opened directly on a phone.
 
-2. Start the app
+## Tech Stack
 
-   ```bash
-   npx expo start
-   ```
+- React Native + Expo SDK 58
+- TypeScript
+- Expo Router
+- Redux Toolkit + RTK Query
+- decimal.js
+- react-native-toast-message
+- Vitest
+- Vercel
 
-In the output, you'll find options to open the app in a
+## Getting Started
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+**Requirements:** Node.js 22 and npm.
 
 ```bash
-npm run reset-project
+nvm use 22
+npm install
+npx expo start --web
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Open the local URL displayed in the terminal.
 
-### Other setup steps
+## Authentication
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+On first launch, enter a valid CashMine API token.
 
-## Learn more
+The token is provided at runtime and stored locally in the browser. It is not hardcoded into the application or included in the deployed JavaScript bundle.
 
-To learn more about developing your project with Expo, look at the following resources:
+Users can replace their token from the application interface.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+API base URL: `https://task-api.cashmine.io`
 
-## Join the community
+## Implemented Features
 
-Join our community of developers creating universal apps.
+**Balances**
+- Asset balances with available, pending, and claiming amounts
+- Estimated total available USD balance
+- Snapshot freshness indicator
+- Loading, error, retry, and refresh states
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Claims**
+- Asset and destination selection
+- Amount entry and Max action
+- Decimal precision and amount validation
+- Fee and receive amount calculation
+- Explicit confirmation before submission
+- Idempotent claim requests
+- Claim status tracking and timeout recovery
+- Success, error, and informational feedback
+
+**Navigation and Architecture**
+- Expo Router navigation
+- Responsive bottom tab navigation
+- Separation of UI, hooks, API services, and financial utilities
+- Reusable components
+
+## Testing
+
+Run the unit tests:
+
+```bash
+npm test
+```
+
+The project includes 32 financial unit tests covering amount parsing, validation, decimal precision, fees, and USD totals.
+
+Additional checks:
+
+```bash
+npx tsc --noEmit
+npx expo lint
+npx expo export --platform web
+```
+
+## Deployment
+
+The Expo web build is deployed to Vercel through GitHub.
+
+Production build:
+
+```bash
+npx expo export --platform web
+```
+
+The generated static files are exported to `dist/`.
+
+## Additional Documentation
+
+See [NOTES.md](./NOTES.md) for architectural decisions, AI collaboration examples, and known limitations.
+
+AI conversation records are included in [`ai-logs/`](./ai-logs/).
