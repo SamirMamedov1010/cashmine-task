@@ -6,6 +6,7 @@ import {
   beginValidation,
   setAnonymous,
 } from '../features/auth/authSlice';
+import { resetClaimState } from '../features/claims/claimSlice';
 import { api } from '../services/api';
 import {
   loadStoredToken,
@@ -24,6 +25,7 @@ export function AuthGate() {
 
   const verifyToken = useCallback(
     async (token: string) => {
+      dispatch(resetClaimState());
       dispatch(beginValidation(token));
       const request = dispatch(
         api.endpoints.getBalances.initiate(undefined, {

@@ -29,6 +29,14 @@ export function getApiError(error: unknown): ApiErrorInfo {
     : undefined;
   const status = queryError.status;
 
+  if (status === 400 || data?.code === 'VALIDATION') {
+    return {
+      status,
+      code: 'VALIDATION',
+      message: data?.message || 'CashMine rejected the claim details. Review the amount and destination.',
+    };
+  }
+
   if (status === 401 || data?.code === 'UNAUTHORIZED') {
     return {
       status,
@@ -47,6 +55,14 @@ export function getApiError(error: unknown): ApiErrorInfo {
     };
   }
 
+  if (status === 409 || data?.code === 'IDEMPOTENCY_MISMATCH') {
+    return {
+      status,
+      code: 'IDEMPOTENCY_MISMATCH',
+      message: 'The saved claim no longer matches its idempotency key. It cannot be retried safely.',
+    };
+  }
+
   if (status === 504 || data?.code === 'TIMEOUT') {
     return {
       status,
@@ -60,6 +76,13 @@ export function getApiError(error: unknown): ApiErrorInfo {
       status,
       code: 'SERVER',
       message: 'CashMine is temporarily unavailable. Please try again.',
+    };
+  }
+
+  if (status === 'FETCH_ERROR' || status === 'PARSING_ERROR') {
+    return {
+      status,
+      message: 'The claim response was not received. Its outcome is unknown.',
     };
   }
 

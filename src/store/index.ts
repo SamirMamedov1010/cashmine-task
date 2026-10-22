@@ -3,11 +3,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 import { authReducer } from '../features/auth/authSlice';
+import { claimReducer } from '../features/claims/claimSlice';
 import { api } from '../services/api';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    claim: claimReducer,
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>

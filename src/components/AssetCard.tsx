@@ -2,9 +2,11 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { BalanceItem } from '../types/api';
 import { formatDecimalString } from '../utils/money';
+import { PrimaryButton } from './PrimaryButton';
 
 interface AssetCardProps {
   item: BalanceItem;
+  onClaim?: () => void;
 }
 
 function AmountRow({ label, value }: { label: string; value: string }) {
@@ -18,7 +20,7 @@ function AmountRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function AssetCard({ item }: AssetCardProps) {
+export function AssetCard({ item, onClaim }: AssetCardProps) {
   const initials = item.asset.slice(0, 2).toUpperCase();
 
   return (
@@ -40,6 +42,9 @@ export function AssetCard({ item }: AssetCardProps) {
       <View style={styles.divider} />
       <AmountRow label="Pending" value={item.pending} />
       <AmountRow label="Claiming" value={item.claiming} />
+      {onClaim && (
+        <PrimaryButton label={`Claim ${item.asset}`} onPress={onClaim} variant="secondary" />
+      )}
     </View>
   );
 }

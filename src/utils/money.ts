@@ -24,3 +24,11 @@ export function formatUsd(value: DecimalJs): string {
   const [whole, fraction] = value.toDecimalPlaces(2).toFixed(2).split('.');
   return `$${groupWholeDigits(whole)}.${fraction}`;
 }
+
+export function isPositiveDecimal(value: string): boolean {
+  try {
+    return new DecimalJs(value).greaterThan(0);
+  } catch {
+    return false;
+  }
+}

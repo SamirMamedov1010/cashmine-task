@@ -12,6 +12,35 @@ export interface BalancesResponse {
   items: BalanceItem[];
 }
 
+export interface ClaimDestination {
+  id: string;
+  label: string;
+}
+
+export interface ClaimOptionsResponse {
+  asset: string;
+  minAmount: string;
+  fee: string;
+  destinations: ClaimDestination[];
+}
+
+export interface CreateClaimRequest {
+  asset: string;
+  amount: string;
+  destinationId: string;
+}
+
+export interface CreateClaimResponse {
+  id: string;
+}
+
+export type ClaimStatus = 'pending' | 'completed' | 'failed';
+
+export interface ClaimStatusResponse {
+  status: ClaimStatus;
+  failureReason?: string;
+}
+
 export type CashMineErrorCode =
   | 'VALIDATION'
   | 'UNAUTHORIZED'

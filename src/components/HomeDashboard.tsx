@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,11 +12,17 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { sessionExpired, setAnonymous } from '../features/auth/authSlice';
+import { resetClaimState } from '../features/claims/claimSlice';
+import { useClaimRecovery } from '../features/claims/useClaimRecovery';
 import { api, useGetBalancesQuery } from '../services/api';
 import { removeStoredToken } from '../services/tokenStorage';
 import { useAppDispatch } from '../store/hooks';
 import { getApiError } from '../utils/apiError';
-import { calculateTotalAvailableUsd, formatUsd } from '../utils/money';
+import {
+  calculateTotalAvailableUsd,
+  formatDecimalString,
+  formatUsd,
+} from '../utils/money';
 import { AssetCard } from './AssetCard';
 import { PrimaryButton } from './PrimaryButton';
 
@@ -54,6 +61,7 @@ function getFreshness(asOf: string, now: number) {
 
 export function HomeDashboard() {
   const dispatch = useAppDispatch();
+  const { attempt } = useClaimRecovery();
   const now = useNow();
   const {
     data,
@@ -121,6 +129,7 @@ export function HomeDashboard() {
   function replaceToken() {
     removeStoredToken();
     dispatch(api.util.resetApiState());
+    dispatch(resetClaimState());
     dispatch(setAnonymous());
   }
 
@@ -179,6 +188,31 @@ export function HomeDashboard() {
             </View>
           )}
 
+          {attempt && (
+            <View style={styles.claimBanner}>
+              <View style={styles.claimBannerText}>
+                <Text style={styles.claimBannerTitle}>
+                  {attempt.phase === 'completed'
+                    ? 'Claim completed'
+                    : attempt.phase === 'failed'
+                      ? 'Claim failed'
+                      : 'Claim in progress'}
+                </Text>
+                <Text style={styles.claimBannerBody}>
+                  {formatDecimalString(attempt.body.amount)} {attempt.body.asset} ·{' '}
+                  {attempt.phase}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/claim')}
+                style={({ pressed }) => [styles.claimBannerButton, pressed && styles.pressed]}
+              >
+                <Text style={styles.claimBannerButtonText}>View</Text>
+              </Pressable>
+            </View>
+          )}
+
           {isLoading && !data && (
             <View style={styles.stateCard}>
               <ActivityIndicator color="#5E35F2" size="large" />
@@ -224,7 +258,13 @@ export function HomeDashboard() {
                 <Text style={styles.assetCount}>{data.items.length}</Text>
               </View>
               {data.items.map((item) => (
-                <AssetCard item={item} key={item.asset} />
+                <AssetCard
+                  item={item}
+                  key={item.asset}
+                  onClaim={() =>
+                    router.push({ pathname: '/claim', params: { asset: item.asset } })
+                  }
+                />
               ))}
             </View>
           )}
@@ -305,6 +345,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+  claimBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EEEAFE',
+    borderColor: '#D8CFFD',
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 15,
+    gap: 12,
+  },
+  claimBannerText: { flex: 1 },
+  claimBannerTitle: { color: '#312A47', fontSize: 15, fontWeight: '800' },
+  claimBannerBody: { color: '#6F687D', fontSize: 12, marginTop: 3 },
+  claimBannerButton: {
+    minHeight: 38,
+    minWidth: 58,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: '#5E35F2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  claimBannerButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
   freshnessRow: {
     flexDirection: 'row',
     alignItems: 'center',
