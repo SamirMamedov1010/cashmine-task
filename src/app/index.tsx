@@ -5,7 +5,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>CashMine</Text>
       <Text style={styles.subtitle}>
-        Ready for the coding challenge
+        Environment is ready!
       </Text>
     </View>
   );
