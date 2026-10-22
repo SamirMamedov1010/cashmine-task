@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -11,127 +10,25 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { sessionExpired, setAnonymous } from '../features/auth/authSlice';
-import { resetClaimState } from '../features/claims/claimSlice';
-import { useClaimRecovery } from '../features/claims/useClaimRecovery';
-import { api, useGetBalancesQuery } from '../services/api';
-import { removeStoredToken } from '../services/tokenStorage';
-import { useAppDispatch } from '../store/hooks';
-import { getApiError } from '../utils/apiError';
-import {
-  calculateTotalAvailableUsd,
-  formatDecimalString,
-  formatUsd,
-} from '../utils/money';
+import { useBalancesDashboard } from '../features/balances/useBalancesDashboard';
+import { formatDecimalString, formatUsd } from '../utils/money';
 import { AssetCard } from './AssetCard';
 import { PrimaryButton } from './PrimaryButton';
 
-const SNAPSHOT_INTERVAL_MS = 15_000;
-
-function useNow(intervalMs = 1_000) {
-  const [now, setNow] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(interval);
-  }, [intervalMs]);
-
-  return now;
-}
-
-function getFreshness(asOf: string, now: number) {
-  const timestamp = Date.parse(asOf);
-  if (!Number.isFinite(timestamp)) {
-    return { label: 'Freshness unknown', tone: 'stale' as const };
-  }
-
-  const ageSeconds = Math.max(0, Math.floor((now - timestamp) / 1_000));
-  const relative = ageSeconds < 5 ? 'just now' : `${ageSeconds}s ago`;
-
-  if (ageSeconds <= 30) {
-    return { label: `Updated ${relative}`, tone: 'fresh' as const };
-  }
-
-  if (ageSeconds <= 60) {
-    return { label: `Updating · ${relative}`, tone: 'aging' as const };
-  }
-
-  return { label: `Stale · ${relative}`, tone: 'stale' as const };
-}
-
 export function HomeDashboard() {
-  const dispatch = useAppDispatch();
-  const { attempt } = useClaimRecovery();
-  const now = useNow();
   const {
+    attempt,
     data,
-    error,
+    errorInfo,
+    freshness,
     isError,
     isFetching,
     isLoading,
-    refetch,
-    startedTimeStamp,
-  } = useGetBalancesQuery(undefined, {
-    pollingInterval: 0,
-    refetchOnFocus: true,
-    refetchOnReconnect: true,
-    skipPollingIfUnfocused: true,
-  });
-  const errorInfo = useMemo(() => (error ? getApiError(error) : null), [error]);
-  const rateLimitUntil =
-    errorInfo?.code === 'RATE_LIMITED'
-      ? (startedTimeStamp ?? 0) + (errorInfo.retryAfterMs ?? SNAPSHOT_INTERVAL_MS)
-      : null;
-
-  useEffect(() => {
-    if (errorInfo?.code === 'UNAUTHORIZED') {
-      removeStoredToken();
-      dispatch(sessionExpired());
-      dispatch(api.util.resetApiState());
-      return;
-    }
-  }, [dispatch, errorInfo]);
-
-  useEffect(() => {
-    if (!rateLimitUntil) {
-      return;
-    }
-
-    const delay = Math.max(0, rateLimitUntil - Date.now());
-    const timeout = setTimeout(() => {
-      refetch();
-    }, delay);
-
-    return () => clearTimeout(timeout);
-  }, [rateLimitUntil, refetch]);
-
-  useEffect(() => {
-    if (errorInfo?.code === 'RATE_LIMITED') {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      refetch();
-    }, SNAPSHOT_INTERVAL_MS);
-
-    return () => clearInterval(interval);
-  }, [errorInfo?.code, refetch]);
-
-  const total = useMemo(
-    () => (data ? calculateTotalAvailableUsd(data.items) : null),
-    [data],
-  );
-  const freshness = data ? getFreshness(data.asOf, now) : null;
-  const rateLimitSeconds = rateLimitUntil
-    ? Math.max(1, Math.ceil((rateLimitUntil - now) / 1_000))
-    : null;
-
-  function replaceToken() {
-    removeStoredToken();
-    dispatch(api.util.resetApiState());
-    dispatch(resetClaimState());
-    dispatch(setAnonymous());
-  }
+    rateLimitSeconds,
+    refresh,
+    replaceToken,
+    total,
+  } = useBalancesDashboard();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -140,9 +37,7 @@ export function HomeDashboard() {
         refreshControl={
           <RefreshControl
             colors={['#5E35F2']}
-            onRefresh={() => {
-              void refetch();
-            }}
+            onRefresh={refresh}
             refreshing={Boolean(data && isFetching)}
             tintColor="#5E35F2"
           />
@@ -233,7 +128,7 @@ export function HomeDashboard() {
                 <PrimaryButton
                   label="Try again"
                   onPress={() => {
-                    void refetch();
+                    refresh();
                   }}
                   variant="secondary"
                 />

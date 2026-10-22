@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import type { ClaimAttempt } from '../features/claims/types';
+import { useNow } from '../hooks/useNow';
 import { formatDecimalString } from '../utils/money';
 import { PrimaryButton } from './PrimaryButton';
 
@@ -64,17 +65,8 @@ export function ClaimStatusPanel({
   onRetry,
   onReturnHome,
 }: ClaimStatusPanelProps) {
-  const [now, setNow] = useState(0);
+  const now = useNow(Boolean(attempt.retryAfterUntil));
   const content = phaseContent(attempt);
-
-  useEffect(() => {
-    if (!attempt.retryAfterUntil) {
-      return;
-    }
-
-    const interval = setInterval(() => setNow(Date.now()), 1_000);
-    return () => clearInterval(interval);
-  }, [attempt.retryAfterUntil]);
 
   const retrySeconds = useMemo(() => {
     if (!attempt.retryAfterUntil) {
